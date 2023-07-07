@@ -35,18 +35,18 @@ const getSpecificStreamer = asyncHandler(async (req, res) => {
 // @route POST /streamers
 const postNewStreamer = asyncHandler(async (req, res) => {
 
-    if (!req.body.newStreamer) {
+    if (!req.body) {
         res.status(400)
         throw new Error("Please add new streamer's data")
     }
 
     try {
         const newStreamer = await Streamer.create({
-            name: req.body.newStreamer.name,
-            desc: req.body.newStreamer.desc,
-            platform: req.body.newStreamer.platform,
-            upvotes: req.body.newStreamer.upvotes,
-            downvotes: req.body.newStreamer.downvotes,
+            name: req.body.name,
+            desc: req.body.desc,
+            platform: req.body.platform,
+            upvotes: req.body.upvotes,
+            downvotes: req.body.downvotes,
         })
 
         res.status(200).json(newStreamer)
@@ -60,21 +60,29 @@ const postNewStreamer = asyncHandler(async (req, res) => {
 // @route PUT /streamer/:id/vote
 const updateStreamersVotes = asyncHandler(async (req, res) => {
 
-    if (!req.body.updatedStreamer) {
+    if (!req.body.upvotes && !req.body.downvotes) {
         res.status(400)
         throw new Error("Please add updated streamer's data")
     }
-    if (typeof req.body.updatedStreamer.upvotes != Number || typeof req.body.updatedStreamer.downvotes != Number) {
+    if ((req.body.upvotes && typeof req.body.upvotes != 'number') || (req.body.downvotes && typeof req.body.downvotes != 'number')) {
         res.status(400)
         throw new Error("Wrong data format! Upvotes/downvotes should be of type Number!")
     }
 
     try {
-        const updatedStreamer = await Streamer.findByIdAndUpdate(req.params.id, {
-            upvotes: req.body.updatedStreamer.upvotes,
-            downvotes: req.body.updatedStreamer.downvotes,
-        })
-        res.status(200).json(updatedStreamer)
+
+        if (req.body.upvotes) {            
+            const updatedStreamer = await Streamer.findByIdAndUpdate(req.params.id, {
+                upvotes: req.body.upvotes,
+            });
+            res.status(200).json({ message: 'Streamer votes updated correctly' });
+        }
+        if (req.body.downvotes) {
+            const updatedStreamer = await Streamer.findByIdAndUpdate(req.params.id, {
+                downvotes: req.body.downvotes,
+            });
+            res.status(200).json({ message: 'Streamer votes updated correctly' });
+        }
     } catch (error) {
         res.json(error.message)
     }
